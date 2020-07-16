@@ -39,11 +39,11 @@ import (
 )
 
 var (
-	dnskey *dns.DNSKEY
+	dnsKey *dns.DNSKEY
 )
 
 // Dig entry of DNS dig
-func Dig(querys []string) (string, error) {
+func Dig(queries []string) (string, error) {
 
 	queryFLag := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	output := new(bytes.Buffer)
@@ -78,7 +78,7 @@ func Dig(querys []string) (string, error) {
 		err    error
 	)
 
-	err = queryFLag.Parse(querys)
+	err = queryFLag.Parse(queries)
 
 	if err != nil {
 		return "", err
@@ -105,7 +105,7 @@ func Dig(querys []string) (string, error) {
 		if k, ok := r.(*dns.DNSKEY); !ok {
 			_, _ = fmt.Fprintf(os.Stderr, "No DNSKEY read from %s\n", *anchor)
 		} else {
-			dnskey = k
+			dnsKey = k
 		}
 	}
 
@@ -451,17 +451,17 @@ func sectionCheck(set []dns.RR, server string, tcp bool, output io.Writer) {
 				expired = "(*EXPIRED*)"
 			}
 			rrset := getRRset(set, rr.Header().Name, rr.(*dns.RRSIG).TypeCovered)
-			if dnskey == nil {
+			if dnsKey == nil {
 				key = getKey(rr.(*dns.RRSIG).SignerName, rr.(*dns.RRSIG).KeyTag, server, tcp)
 			} else {
-				key = dnskey
+				key = dnsKey
 			}
 			if key == nil {
 				_, _ = fmt.Fprintf(output, ";? DNSKEY %s/%d not found\n", rr.(*dns.RRSIG).SignerName, rr.(*dns.RRSIG).KeyTag)
 				continue
 			}
 			where := "net"
-			if dnskey != nil {
+			if dnsKey != nil {
 				where = "disk"
 			}
 			if err := rr.(*dns.RRSIG).Verify(key, rrset); err != nil {
